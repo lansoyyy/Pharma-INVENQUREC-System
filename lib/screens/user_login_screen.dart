@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharma_invenqurec/screens/user_home_screen.dart';
 import 'package:pharma_invenqurec/utlis/colors.dart';
 import 'package:pharma_invenqurec/widgets/button_widget.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
@@ -91,7 +92,10 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                 width: 300,
                 color: primary,
                 label: 'Login',
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const UserHomeScreen()));
+                },
               ),
             ),
           ],
