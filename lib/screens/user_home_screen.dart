@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharma_invenqurec/screens/item_screen.dart';
 import 'package:pharma_invenqurec/utlis/colors.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
 
@@ -26,7 +27,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const ItemScreen()));
+                    },
                     icon: Icon(
                       Icons.qr_code,
                       color: primary,
