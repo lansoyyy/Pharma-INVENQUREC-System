@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharma_invenqurec/screens/admin_login_screen.dart';
 import 'package:pharma_invenqurec/screens/user_login_screen.dart';
 import 'package:pharma_invenqurec/widgets/button_widget.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
@@ -63,7 +64,10 @@ class LandingScreen extends StatelessWidget {
                   radius: 100,
                   fontSize: 12,
                   label: 'Continue as Admin',
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => const AdminLoginScreen()));
+                  },
                 ),
               ],
             ),
