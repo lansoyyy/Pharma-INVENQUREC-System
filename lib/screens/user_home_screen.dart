@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharma_invenqurec/screens/add_item_screen.dart';
 import 'package:pharma_invenqurec/screens/item_screen.dart';
 import 'package:pharma_invenqurec/screens/user_notif_screen.dart';
 import 'package:pharma_invenqurec/utlis/colors.dart';
@@ -102,7 +103,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     decoration:
                         BoxDecoration(color: primary, shape: BoxShape.circle),
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => const AddItemScreen()));
+                      },
                       icon: const Icon(
                         Icons.add,
                         color: Colors.white,
