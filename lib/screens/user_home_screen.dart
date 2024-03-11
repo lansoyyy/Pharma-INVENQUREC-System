@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pharma_invenqurec/screens/item_screen.dart';
+import 'package:pharma_invenqurec/screens/user_notif_screen.dart';
 import 'package:pharma_invenqurec/utlis/colors.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
 
@@ -43,7 +44,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     fontFamily: 'Bold',
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const UserNotifScreen()));
+                    },
                     icon: Icon(
                       Icons.notifications,
                       color: primary,

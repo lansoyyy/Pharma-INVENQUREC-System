@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharma_invenqurec/screens/add_item_screen.dart';
 import 'package:pharma_invenqurec/screens/item_screen.dart';
 import 'package:pharma_invenqurec/utlis/colors.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
@@ -40,7 +41,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     fontFamily: 'Bold',
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => const AddItemScreen()));
+                    },
                     icon: Icon(
                       Icons.add,
                       color: primary,
@@ -131,6 +135,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       fontFamily: 'Bold',
                     ),
                   ),
+                  DataColumn(
+                    label: TextWidget(
+                      text: 'Actions',
+                      fontSize: 18,
+                      fontFamily: 'Bold',
+                    ),
+                  ),
                 ], rows: [
                   for (int i = 0; i < 50; i++)
                     DataRow(cells: [
@@ -164,6 +175,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         TextWidget(
                           text: 'Sample',
                           fontSize: 14,
+                        ),
+                      ),
+                      DataCell(
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => const ItemScreen()));
+                          },
+                          child: TextWidget(
+                            text: 'Edit',
+                            color: primary,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ])
