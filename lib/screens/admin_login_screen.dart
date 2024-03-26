@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pharma_invenqurec/screens/admin_home_screen.dart';
 import 'package:pharma_invenqurec/screens/user_home_screen.dart';
@@ -5,6 +6,7 @@ import 'package:pharma_invenqurec/utlis/colors.dart';
 import 'package:pharma_invenqurec/widgets/button_widget.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
 import 'package:pharma_invenqurec/widgets/textfield_widget.dart';
+import 'package:pharma_invenqurec/widgets/toast_widget.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -94,8 +96,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 color: primary,
                 label: 'Login',
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const AdminHomeScreen()));
+                  login(context);
                 },
               ),
             ),
@@ -103,5 +104,29 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         ),
       ),
     );
+  }
+
+  login(context) async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: email.text, password: password.text);
+      showToast('Logged in succesfully!');
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const AdminHomeScreen()));
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        showToast("No user found with that email.");
+      } else if (e.code == 'wrong-password') {
+        showToast("Wrong password provided for that user.");
+      } else if (e.code == 'invalid-email') {
+        showToast("Invalid email provided.");
+      } else if (e.code == 'user-disabled') {
+        showToast("User account has been disabled.");
+      } else {
+        showToast("An error occurred: ${e.message}");
+      }
+    } on Exception catch (e) {
+      showToast("An error occurred: $e");
+    }
   }
 }

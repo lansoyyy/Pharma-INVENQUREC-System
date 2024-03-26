@@ -1,6 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pharma_invenqurec/screens/add_user_screen.dart';
-
+import 'package:intl/intl.dart' show DateFormat, toBeginningOfSentenceCase;
 import '../utlis/colors.dart';
 import '../widgets/text_widget.dart';
 
@@ -91,58 +92,95 @@ class _UsersScreenState extends State<UsersScreen> {
             const SizedBox(
               height: 20,
             ),
-            DataTable(columns: [
-              DataColumn(
-                label: TextWidget(
-                  text: 'Image',
-                  fontSize: 18,
-                  fontFamily: 'Bold',
-                ),
-              ),
-              DataColumn(
-                label: TextWidget(
-                  text: 'Name',
-                  fontSize: 18,
-                  fontFamily: 'Bold',
-                ),
-              ),
-              DataColumn(
-                label: TextWidget(
-                  text: 'Actions',
-                  fontSize: 18,
-                  fontFamily: 'Bold',
-                ),
-              ),
-            ], rows: [
-              for (int i = 0; i < 50; i++)
-                DataRow(cells: [
-                  DataCell(Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Container(
-                      width: 50,
-                      height: 75,
-                      decoration: const BoxDecoration(
-                          color: Colors.black, shape: BoxShape.circle),
-                    ),
-                  )),
-                  DataCell(
-                    TextWidget(
-                      text: 'Sample',
-                      fontSize: 14,
-                    ),
-                  ),
-                  DataCell(
-                    TextButton(
-                      onPressed: () {},
-                      child: TextWidget(
-                        text: 'Delete',
-                        color: Colors.red,
-                        fontSize: 14,
+            StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('Users')
+                    .where('name',
+                        isGreaterThanOrEqualTo:
+                            toBeginningOfSentenceCase(nameSearched))
+                    .where('name',
+                        isLessThan:
+                            '${toBeginningOfSentenceCase(nameSearched)}z')
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    print(snapshot.error);
+                    return const Center(child: Text('Error'));
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: 50),
+                      child: Center(
+                          child: CircularProgressIndicator(
+                        color: Colors.black,
+                      )),
+                    );
+                  }
+
+                  final data = snapshot.requireData;
+                  return DataTable(columns: [
+                    DataColumn(
+                      label: TextWidget(
+                        text: 'Image',
+                        fontSize: 18,
+                        fontFamily: 'Bold',
                       ),
                     ),
-                  ),
-                ])
-            ]),
+                    DataColumn(
+                      label: TextWidget(
+                        text: 'Name',
+                        fontSize: 18,
+                        fontFamily: 'Bold',
+                      ),
+                    ),
+                    DataColumn(
+                      label: TextWidget(
+                        text: 'Actions',
+                        fontSize: 18,
+                        fontFamily: 'Bold',
+                      ),
+                    ),
+                  ], rows: [
+                    for (int i = 0; i < data.docs.length; i++)
+                      DataRow(cells: [
+                        DataCell(Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: Container(
+                            width: 50,
+                            height: 75,
+                            decoration: const BoxDecoration(
+                                color: Colors.black, shape: BoxShape.circle),
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                            ),
+                          ),
+                        )),
+                        DataCell(
+                          TextWidget(
+                            text: data.docs[i]['name'],
+                            fontSize: 14,
+                          ),
+                        ),
+                        DataCell(
+                          TextButton(
+                            onPressed: () async {
+                              await FirebaseFirestore.instance
+                                  .collection('Users')
+                                  .doc(data.docs[i].id)
+                                  .delete();
+                            },
+                            child: TextWidget(
+                              text: 'Delete',
+                              color: Colors.red,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ])
+                  ]);
+                }),
           ],
         ),
       ),

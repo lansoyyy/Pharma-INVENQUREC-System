@@ -1,9 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pharma_invenqurec/screens/admin_home_screen.dart';
+import 'package:pharma_invenqurec/services/signup.dart';
 import 'package:pharma_invenqurec/utlis/colors.dart';
 import 'package:pharma_invenqurec/widgets/button_widget.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
 import 'package:pharma_invenqurec/widgets/textfield_widget.dart';
+import 'package:pharma_invenqurec/widgets/toast_widget.dart';
 
 class AddUserScreen extends StatefulWidget {
   const AddUserScreen({super.key});
@@ -100,8 +103,7 @@ class _AddUserScreenState extends State<AddUserScreen> {
                 color: primary,
                 label: 'Create',
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const AdminHomeScreen()));
+                  register(context);
                 },
               ),
             ),
@@ -112,5 +114,34 @@ class _AddUserScreenState extends State<AddUserScreen> {
         ),
       ),
     );
+  }
+
+  register(context) async {
+    try {
+      final user = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email.text, password: password.text);
+
+      // signup(nameController.text, numberController.text, addressController.text,
+      //     emailController.text);
+
+      signup(name.text, user.user!.uid, email.text);
+
+      showToast("Registered Successfully!");
+
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const AdminHomeScreen()));
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        showToast('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        showToast('The account already exists for that email.');
+      } else if (e.code == 'invalid-email') {
+        showToast('The email address is not valid.');
+      } else {
+        showToast(e.toString());
+      }
+    } on Exception catch (e) {
+      showToast("An error occurred: $e");
+    }
   }
 }
