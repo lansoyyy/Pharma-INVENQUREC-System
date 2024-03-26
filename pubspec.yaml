@@ -42,6 +42,9 @@ dependencies:
   fluttertoast:
   get_storage:
   intl:
+  image_picker:
+  qr_flutter:
+  flutter_barcode_scanner:
 
 dev_dependencies:
   flutter_test:
