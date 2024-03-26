@@ -19,7 +19,7 @@ class _UsersScreenState extends State<UsersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
+        foregroundColor: Colors.black,
         title: TextWidget(
           text: 'User Management',
           fontSize: 18,

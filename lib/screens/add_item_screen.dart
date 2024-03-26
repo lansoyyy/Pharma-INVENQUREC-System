@@ -23,7 +23,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          foregroundColor: Colors.white,
+          foregroundColor: Colors.black,
           title: TextWidget(
             text: '',
             fontSize: 18,
@@ -204,15 +204,6 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 radius: 100,
                 color: primary,
                 label: 'Save Item',
-                onPressed: () {},
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              ButtonWidget(
-                radius: 100,
-                color: primary,
-                label: 'Generate QR',
                 onPressed: () {},
               ),
               const SizedBox(

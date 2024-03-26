@@ -8,7 +8,7 @@ class UserNotifScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
+        foregroundColor: Colors.black,
         title: TextWidget(
           text: 'Notifications',
           fontSize: 18,

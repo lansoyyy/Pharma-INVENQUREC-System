@@ -230,6 +230,15 @@ class _ItemScreenState extends State<ItemScreen> {
                         )),
                   ],
                 ),
+                const SizedBox(
+                  height: 30,
+                ),
+                ButtonWidget(
+                  radius: 100,
+                  color: primary,
+                  label: 'Generate QR',
+                  onPressed: () {},
+                ),
               ],
             ),
           ),
