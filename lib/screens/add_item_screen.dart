@@ -1,9 +1,19 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pharma_invenqurec/services/add_item.dart';
 import 'package:pharma_invenqurec/utlis/colors.dart';
 import 'package:pharma_invenqurec/widgets/button_widget.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
 import 'package:pharma_invenqurec/widgets/textfield_widget.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:path/path.dart' as path;
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:io';
+
+import 'package:pharma_invenqurec/widgets/toast_widget.dart';
 
 class AddItemScreen extends StatefulWidget {
   const AddItemScreen({super.key});
@@ -19,8 +29,85 @@ class _AddItemScreenState extends State<AddItemScreen> {
   final code = TextEditingController();
   final unit = TextEditingController();
   final date = TextEditingController();
+
+  late String fileName = '';
+
+  late File imageFile;
+
+  late String imageURL = '';
+
+  Random random = Random();
+  int min = 100000; // Minimum 6-digit number
+  int max = 999999; // Maximum 6-digit number
+
+  Future<void> uploadPicture(String inputSource) async {
+    final picker = ImagePicker();
+    XFile pickedImage;
+    try {
+      pickedImage = (await picker.pickImage(
+          source: inputSource == 'camera'
+              ? ImageSource.camera
+              : ImageSource.gallery,
+          maxWidth: 1920))!;
+
+      fileName = path.basename(pickedImage.path);
+      imageFile = File(pickedImage.path);
+
+      try {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) => const Padding(
+            padding: EdgeInsets.only(left: 30, right: 30),
+            child: AlertDialog(
+                title: Row(
+              children: [
+                CircularProgressIndicator(
+                  color: Colors.black,
+                ),
+                SizedBox(
+                  width: 20,
+                ),
+                Text(
+                  'Loading . . .',
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'QRegular'),
+                ),
+              ],
+            )),
+          ),
+        );
+
+        await firebase_storage.FirebaseStorage.instance
+            .ref('Items/$fileName')
+            .putFile(imageFile);
+        imageURL = await firebase_storage.FirebaseStorage.instance
+            .ref('Items/$fileName')
+            .getDownloadURL();
+
+        setState(() {});
+
+        Navigator.of(context).pop();
+        showToast('Image uploaded!');
+      } on firebase_storage.FirebaseException catch (error) {
+        if (kDebugMode) {
+          print(error);
+        }
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        print(err);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (code.text == '') {
+      code.text = '${min + random.nextInt(max - min)}';
+    }
     return Scaffold(
         appBar: AppBar(
           foregroundColor: Colors.black,
@@ -44,7 +131,9 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 color: primary,
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  uploadPicture('gallery');
+                },
                 child: TextWidget(
                   text: 'Add Photo',
                   fontSize: 14,
@@ -81,6 +170,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                   SizedBox(
                     width: 150,
                     child: TextFieldWidget(
+                      isEnabled: false,
                       controller: code,
                       label: 'Code #',
                     ),
@@ -204,7 +294,18 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 radius: 100,
                 color: primary,
                 label: 'Save Item',
-                onPressed: () {},
+                onPressed: () {
+                  addItem(
+                      name.text,
+                      categ.text,
+                      desc.text,
+                      min + random.nextInt(max - min),
+                      unit.text,
+                      date.text,
+                      imageURL);
+                  showToast('Item added succesfully!');
+                  Navigator.of(context).pop();
+                },
               ),
               const SizedBox(
                 height: 20,
@@ -231,7 +332,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
         context: context,
         initialDate: DateTime.now(),
         firstDate: DateTime(1950),
-        lastDate: DateTime(2024));
+        lastDate: DateTime(2030));
 
     if (pickedDate != null) {
       String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);

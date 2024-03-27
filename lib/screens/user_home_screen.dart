@@ -31,7 +31,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   IconButton(
                     onPressed: () {
                       Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const ItemScreen()));
+                          builder: (context) => ItemScreen(
+                                id: '',
+                              )));
                     },
                     icon: Icon(
                       Icons.qr_code,
