@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:pharma_invenqurec/screens/add_item_screen.dart';
 import 'package:pharma_invenqurec/screens/item_screen.dart';
 import 'package:pharma_invenqurec/screens/user_notif_screen.dart';
@@ -17,6 +19,44 @@ class UserHomeScreen extends StatefulWidget {
 class _UserHomeScreenState extends State<UserHomeScreen> {
   final searchController = TextEditingController();
   String nameSearched = '';
+
+  String qrCode = 'Unknown';
+  String id = '';
+
+  Future<void> scanQRCode() async {
+    try {
+      final qrCode = await FlutterBarcodeScanner.scanBarcode(
+        '#ff6666',
+        'Cancel',
+        true,
+        ScanMode.QR,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        this.qrCode = qrCode;
+      });
+
+      await FirebaseFirestore.instance
+          .collection('Items')
+          .doc(qrCode)
+          .get()
+          .then((DocumentSnapshot documentSnapshot) async {
+        if (documentSnapshot.exists) {
+          setState(() {
+            id = documentSnapshot['id'];
+          });
+        }
+      }).whenComplete(() => Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => ItemScreen(
+                    id: id,
+                  ))));
+    } on PlatformException {
+      qrCode = 'Failed to get platform version.';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,10 +72,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 children: [
                   IconButton(
                     onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => ItemScreen(
-                                id: '',
-                              )));
+                      scanQRCode();
+                      // Navigator.of(context).push(MaterialPageRoute(
+                      //     builder: (context) => ItemScreen(
+                      //           id: '',
+                      //         )));
                     },
                     icon: Icon(
                       Icons.qr_code,

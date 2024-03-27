@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pharma_invenqurec/widgets/button_widget.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
+import 'package:pharma_invenqurec/widgets/toast_widget.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../utlis/colors.dart';
 
@@ -264,7 +266,47 @@ class _ItemScreenState extends State<ItemScreen> {
                         radius: 100,
                         color: primary,
                         label: 'Generate QR',
-                        onPressed: () {},
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: ((context) {
+                                return AlertDialog(
+                                  title: TextWidget(
+                                      text: 'Your QR Code',
+                                      fontSize: 18,
+                                      color: Colors.black),
+                                  content: SizedBox(
+                                    height: 300,
+                                    width: 300,
+                                    child: QrImageView(
+                                      data: data['id'],
+                                      version: QrVersions.auto,
+                                      size: 200.0,
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: (() {
+                                          Navigator.pop(context);
+                                        }),
+                                        child: TextWidget(
+                                            text: 'Close',
+                                            fontSize: 14,
+                                            color: Colors.black)),
+                                    TextButton(
+                                        onPressed: (() {
+                                          showToast(
+                                              'This feature is under development!');
+                                          Navigator.pop(context);
+                                        }),
+                                        child: TextWidget(
+                                            text: 'Print QR',
+                                            fontSize: 14,
+                                            color: Colors.black)),
+                                  ],
+                                );
+                              }));
+                        },
                       ),
                     ],
                   ),
