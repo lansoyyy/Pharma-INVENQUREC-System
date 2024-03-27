@@ -114,7 +114,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
           title: TextWidget(
             text: '',
             fontSize: 18,
-            color: Colors.white,
+            color: Colors.black,
           ),
           centerTitle: true,
         ),

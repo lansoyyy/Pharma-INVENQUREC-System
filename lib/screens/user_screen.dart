@@ -23,7 +23,7 @@ class _UsersScreenState extends State<UsersScreen> {
         title: TextWidget(
           text: 'User Management',
           fontSize: 18,
-          color: Colors.white,
+          color: Colors.black,
         ),
         centerTitle: true,
       ),

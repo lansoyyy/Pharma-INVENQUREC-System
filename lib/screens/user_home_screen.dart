@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pharma_invenqurec/screens/add_item_screen.dart';
 import 'package:pharma_invenqurec/screens/item_screen.dart';
 import 'package:pharma_invenqurec/screens/user_notif_screen.dart';
 import 'package:pharma_invenqurec/utlis/colors.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
+import 'package:intl/intl.dart' show DateFormat, toBeginningOfSentenceCase;
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -122,79 +124,113 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: DataTable(columns: [
-                  DataColumn(
-                    label: TextWidget(
-                      text: 'Image',
-                      fontSize: 18,
-                      fontFamily: 'Bold',
-                    ),
-                  ),
-                  DataColumn(
-                    label: TextWidget(
-                      text: 'Item Name',
-                      fontSize: 18,
-                      fontFamily: 'Bold',
-                    ),
-                  ),
-                  DataColumn(
-                    label: TextWidget(
-                      text: 'Packaging Unit',
-                      fontSize: 18,
-                      fontFamily: 'Bold',
-                    ),
-                  ),
-                  DataColumn(
-                    label: TextWidget(
-                      text: 'Category',
-                      fontSize: 18,
-                      fontFamily: 'Bold',
-                    ),
-                  ),
-                  DataColumn(
-                    label: TextWidget(
-                      text: 'Quantity',
-                      fontSize: 18,
-                      fontFamily: 'Bold',
-                    ),
-                  ),
-                ], rows: [
-                  for (int i = 0; i < 50; i++)
-                    DataRow(cells: [
-                      DataCell(Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Container(
-                          width: 50,
-                          height: 75,
-                          color: Colors.black,
+                child: StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('Items')
+                        .where('name',
+                            isGreaterThanOrEqualTo:
+                                toBeginningOfSentenceCase(nameSearched))
+                        .where('name',
+                            isLessThan:
+                                '${toBeginningOfSentenceCase(nameSearched)}z')
+                        .snapshots(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasError) {
+                        print(snapshot.error);
+                        return const Center(child: Text('Error'));
+                      }
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Padding(
+                          padding: EdgeInsets.only(top: 50),
+                          child: Center(
+                              child: CircularProgressIndicator(
+                            color: Colors.black,
+                          )),
+                        );
+                      }
+
+                      final data = snapshot.requireData;
+                      return DataTable(columns: [
+                        DataColumn(
+                          label: TextWidget(
+                            text: 'Image',
+                            fontSize: 18,
+                            fontFamily: 'Bold',
+                          ),
                         ),
-                      )),
-                      DataCell(
-                        TextWidget(
-                          text: 'Sample',
-                          fontSize: 14,
+                        DataColumn(
+                          label: TextWidget(
+                            text: 'Item Name',
+                            fontSize: 18,
+                            fontFamily: 'Bold',
+                          ),
                         ),
-                      ),
-                      DataCell(
-                        TextWidget(
-                          text: 'Sample',
-                          fontSize: 14,
+                        DataColumn(
+                          label: TextWidget(
+                            text: 'Packaging Unit',
+                            fontSize: 18,
+                            fontFamily: 'Bold',
+                          ),
                         ),
-                      ),
-                      DataCell(
-                        TextWidget(
-                          text: 'Sample',
-                          fontSize: 14,
+                        DataColumn(
+                          label: TextWidget(
+                            text: 'Category',
+                            fontSize: 18,
+                            fontFamily: 'Bold',
+                          ),
                         ),
-                      ),
-                      DataCell(
-                        TextWidget(
-                          text: 'Sample',
-                          fontSize: 14,
+                        DataColumn(
+                          label: TextWidget(
+                            text: 'Quantity',
+                            fontSize: 18,
+                            fontFamily: 'Bold',
+                          ),
                         ),
-                      ),
-                    ])
-                ]),
+                      ], rows: [
+                        for (int i = 0; i < data.docs.length; i++)
+                          DataRow(cells: [
+                            DataCell(Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Container(
+                                width: 50,
+                                height: 75,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: NetworkImage(
+                                        data.docs[i]['img'],
+                                      ),
+                                      fit: BoxFit.cover),
+                                ),
+                              ),
+                            )),
+                            DataCell(
+                              TextWidget(
+                                text: data.docs[i]['name'],
+                                fontSize: 14,
+                              ),
+                            ),
+                            DataCell(
+                              TextWidget(
+                                text: data.docs[i]['unit'],
+                                fontSize: 14,
+                              ),
+                            ),
+                            DataCell(
+                              TextWidget(
+                                text: data.docs[i]['categ'],
+                                fontSize: 14,
+                              ),
+                            ),
+                            DataCell(
+                              TextWidget(
+                                text: '${data.docs[i]['qty']}',
+                                fontSize: 14,
+                              ),
+                            ),
+                          ])
+                      ]);
+                    }),
               ),
             ],
           ),
