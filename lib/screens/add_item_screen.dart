@@ -144,6 +144,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 height: 20,
               ),
               TextFieldWidget(
+                borderColor: primary,
                 controller: name,
                 label: 'Item Name',
               ),
@@ -151,6 +152,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 height: 10,
               ),
               TextFieldWidget(
+                borderColor: primary,
                 controller: categ,
                 label: 'Category',
               ),
@@ -158,6 +160,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 height: 10,
               ),
               TextFieldWidget(
+                borderColor: primary,
                 controller: desc,
                 label: 'Shelf Description',
               ),
@@ -170,6 +173,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                   SizedBox(
                     width: 150,
                     child: TextFieldWidget(
+                      borderColor: primary,
                       isEnabled: false,
                       controller: code,
                       label: 'Code #',
@@ -178,6 +182,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                   SizedBox(
                     width: 150,
                     child: TextFieldWidget(
+                      borderColor: primary,
                       controller: unit,
                       label: 'Packaging Unit',
                     ),

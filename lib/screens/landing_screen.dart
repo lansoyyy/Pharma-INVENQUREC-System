@@ -4,6 +4,8 @@ import 'package:pharma_invenqurec/screens/user_login_screen.dart';
 import 'package:pharma_invenqurec/widgets/button_widget.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
 
+import '../utlis/colors.dart';
+
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
 
@@ -48,7 +50,7 @@ class LandingScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ButtonWidget(
-                  color: Colors.blue,
+                  color: primary,
                   width: 175,
                   radius: 100,
                   fontSize: 12,
@@ -59,7 +61,7 @@ class LandingScreen extends StatelessWidget {
                   },
                 ),
                 ButtonWidget(
-                  color: Colors.blue,
+                  color: primary,
                   width: 175,
                   radius: 100,
                   fontSize: 12,
