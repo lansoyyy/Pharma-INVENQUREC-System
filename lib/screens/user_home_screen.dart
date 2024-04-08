@@ -109,7 +109,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 children: [
                   Container(
                     height: 40,
-                    width: 300,
+                    width: 250,
                     decoration: BoxDecoration(
                         border: Border.all(
                           color: Colors.black,
@@ -154,6 +154,20 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       },
                       icon: const Icon(
                         Icons.add,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  Container(
+                    decoration:
+                        BoxDecoration(color: primary, shape: BoxShape.circle),
+                    child: IconButton(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.save,
                         color: Colors.white,
                       ),
                     ),
@@ -246,10 +260,22 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               ),
                             )),
                             DataCell(
-                              TextWidget(
-                                text: data.docs[i]['name'],
-                                fontSize: 14,
-                              ),
+                              data.docs[i]['qty'] < 5
+                                  ? Badge(
+                                      label: TextWidget(
+                                        text: 'Low qty',
+                                        fontSize: 10,
+                                        color: Colors.white,
+                                      ),
+                                      child: TextWidget(
+                                        text: data.docs[i]['name'],
+                                        fontSize: 14,
+                                      ),
+                                    )
+                                  : TextWidget(
+                                      text: data.docs[i]['name'],
+                                      fontSize: 14,
+                                    ),
                             ),
                             DataCell(
                               TextWidget(
