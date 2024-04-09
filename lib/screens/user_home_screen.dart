@@ -2,12 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pharma_invenqurec/screens/add_item_screen.dart';
 import 'package:pharma_invenqurec/screens/item_screen.dart';
 import 'package:pharma_invenqurec/screens/user_notif_screen.dart';
 import 'package:pharma_invenqurec/utlis/colors.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
 import 'package:intl/intl.dart' show DateFormat, toBeginningOfSentenceCase;
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'dart:io' as io;
+import 'package:pdf/pdf.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -112,7 +117,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               children: [
                 Container(
                   height: 40,
-                  width: 250,
+                  width: 300,
                   decoration: BoxDecoration(
                       border: Border.all(
                         color: Colors.black,
@@ -157,20 +162,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     },
                     icon: const Icon(
                       Icons.add,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  width: 20,
-                ),
-                Container(
-                  decoration:
-                      BoxDecoration(color: primary, shape: BoxShape.circle),
-                  child: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.save,
                       color: Colors.white,
                     ),
                   ),
@@ -256,19 +247,60 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   Widget tableWidget() {
     return Column(
       children: [
-        Align(
-          alignment: Alignment.topLeft,
-          child: IconButton(
-            onPressed: () {
-              setState(() {
-                selectedCateg = '';
-              });
-            },
-            icon: const Icon(
-              Icons.arrow_back,
-            ),
-          ),
-        ),
+        StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('Items')
+                .where('name',
+                    isGreaterThanOrEqualTo:
+                        toBeginningOfSentenceCase(nameSearched))
+                .where('name',
+                    isLessThan: '${toBeginningOfSentenceCase(nameSearched)}z')
+                .where('categ', isEqualTo: selectedCateg)
+                .snapshots(),
+            builder:
+                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasError) {
+                print(snapshot.error);
+                return const Center(child: Text('Error'));
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.only(top: 50),
+                  child: Center(
+                      child: CircularProgressIndicator(
+                    color: Colors.black,
+                  )),
+                );
+              }
+
+              final data = snapshot.requireData;
+              return Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedCateg = '';
+                        });
+                      },
+                      icon: const Icon(
+                        Icons.arrow_back,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        generatePdf(data.docs);
+                      },
+                      icon: const Icon(
+                        Icons.save,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: StreamBuilder<QuerySnapshot>(
@@ -393,5 +425,75 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         ),
       ],
     );
+  }
+
+  void generatePdf(List tableDataList) async {
+    final pdf = pw.Document();
+    final tableHeaders = [
+      'Item Name',
+      'Packaging Unit',
+      'Category',
+      'Qty',
+    ];
+
+    List<List<String>> tableData = [];
+    for (var i = 0; i < tableDataList.length; i++) {
+      tableData.add([
+        tableDataList[i]['name'],
+        tableDataList[i]['unit'],
+        tableDataList[i]['categ'],
+        tableDataList[i]['qty'].toString(),
+      ]);
+    }
+
+    pdf.addPage(
+      pw.MultiPage(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        pageFormat: PdfPageFormat.letter,
+        orientation: pw.PageOrientation.portrait,
+        build: (context) => [
+          pw.Align(
+            alignment: pw.Alignment.center,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Text('PHARMA - Invenqurec',
+                    style: const pw.TextStyle(
+                      fontSize: 18,
+                    )),
+                pw.SizedBox(height: 10),
+                pw.Text(
+                  style: const pw.TextStyle(
+                    fontSize: 15,
+                  ),
+                  'Medicine List',
+                ),
+                pw.SizedBox(height: 5),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 20),
+          pw.Table.fromTextArray(
+            headers: tableHeaders,
+            data: tableData,
+            headerDecoration: const pw.BoxDecoration(),
+            rowDecoration: const pw.BoxDecoration(),
+            headerHeight: 25,
+            cellHeight: 45,
+            cellAlignments: {
+              0: pw.Alignment.centerLeft,
+              1: pw.Alignment.center,
+            },
+          ),
+          pw.SizedBox(height: 20),
+        ],
+      ),
+    );
+
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+
+    final output = await getTemporaryDirectory();
+    final file = io.File("${output.path}/payroll_report.pdf");
+    await file.writeAsBytes(await pdf.save());
   }
 }
