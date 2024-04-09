@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pharma_invenqurec/services/add_item.dart';
@@ -35,7 +36,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
   late File imageFile;
 
   late String imageURL = '';
-
+  String _selectedItem = '';
   Random random = Random();
   int min = 100000; // Minimum 6-digit number
   int max = 999999; // Maximum 6-digit number
@@ -151,10 +152,103 @@ class _AddItemScreenState extends State<AddItemScreen> {
               const SizedBox(
                 height: 10,
               ),
-              TextFieldWidget(
-                borderColor: primary,
-                controller: categ,
-                label: 'Category',
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 45, right: 45, top: 5, bottom: 5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RichText(
+                      text: const TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Category',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'Bold',
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextSpan(
+                            text: '*',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'Bold',
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('Categs')
+                            .snapshots(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.hasError) {
+                            print(snapshot.error);
+                            return const Center(child: Text('Error'));
+                          }
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Padding(
+                              padding: EdgeInsets.only(top: 50),
+                              child: Center(
+                                  child: CircularProgressIndicator(
+                                color: Colors.black,
+                              )),
+                            );
+                          }
+
+                          final data = snapshot.requireData;
+                          if (_selectedItem == '') {
+                            _selectedItem = data.docs.first['name'];
+                          }
+                          return Center(
+                              child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(
+                                color: primary,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: SizedBox(
+                              width: 325,
+                              height: 50,
+                              child: Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: DropdownButton<String>(
+                                  underline: const SizedBox(),
+                                  value: _selectedItem,
+                                  onChanged: (String? value) {
+                                    setState(() {
+                                      _selectedItem = value!;
+                                    });
+                                  },
+                                  items: <String>[
+                                    for (int i = 0; i < data.docs.length; i++)
+                                      data.docs[i]['name'],
+                                  ].map<DropdownMenuItem<String>>(
+                                      (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ),
+                          ));
+                        }),
+                  ],
+                ),
               ),
               const SizedBox(
                 height: 10,
@@ -302,7 +396,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                 onPressed: () {
                   addItem(
                       name.text,
-                      categ.text,
+                      _selectedItem,
                       desc.text,
                       min + random.nextInt(max - min),
                       unit.text,
