@@ -50,6 +50,9 @@ dependencies:
   open_file:
   file_picker:
   path_provider:
+  widgets_to_image:
+  image_gallery_saver:
+  screenshot:
 
 dev_dependencies:
   flutter_test:

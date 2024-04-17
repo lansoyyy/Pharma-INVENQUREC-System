@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:pharma_invenqurec/widgets/button_widget.dart';
 import 'package:pharma_invenqurec/widgets/text_widget.dart';
 import 'package:pharma_invenqurec/widgets/toast_widget.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:screenshot/screenshot.dart';
 
 import '../utlis/colors.dart';
 
@@ -17,6 +20,30 @@ class ItemScreen extends StatefulWidget {
 }
 
 class _ItemScreenState extends State<ItemScreen> {
+  ScreenshotController screenshotController = ScreenshotController();
+
+  void downloadImage() async {
+    try {
+      // Capture the widget as an image using the screenshotController
+      Uint8List? bytes = await screenshotController.capture();
+
+      if (bytes != null) {
+        // Save the image to the gallery or storage
+        final result = await ImageGallerySaver.saveImage(bytes);
+
+        if (result['isSuccess']) {
+          print("Image saved to gallery!");
+        } else {
+          print("Failed to save image: ${result['errorMessage']}");
+        }
+      } else {
+        print("Failed to capture the widget as an image.");
+      }
+    } catch (e) {
+      print("Error saving image: $e");
+    }
+  }
+
   int qty = 0;
   @override
   Widget build(BuildContext context) {
@@ -262,51 +289,54 @@ class _ItemScreenState extends State<ItemScreen> {
                       const SizedBox(
                         height: 30,
                       ),
-                      ButtonWidget(
-                        radius: 100,
-                        color: primary,
-                        label: 'Generate QR',
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: ((context) {
-                                return AlertDialog(
-                                  title: TextWidget(
-                                      text: 'Your QR Code',
-                                      fontSize: 18,
-                                      color: Colors.black),
-                                  content: SizedBox(
-                                    height: 300,
-                                    width: 300,
-                                    child: QrImageView(
-                                      data: data['id'],
-                                      version: QrVersions.auto,
-                                      size: 200.0,
+                      Screenshot(
+                        controller: screenshotController,
+                        child: ButtonWidget(
+                          radius: 100,
+                          color: primary,
+                          label: 'Generate QR',
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: ((context) {
+                                  return AlertDialog(
+                                    title: TextWidget(
+                                        text: 'Your QR Code',
+                                        fontSize: 18,
+                                        color: Colors.black),
+                                    content: SizedBox(
+                                      height: 300,
+                                      width: 300,
+                                      child: QrImageView(
+                                        data: data['id'],
+                                        version: QrVersions.auto,
+                                        size: 200.0,
+                                      ),
                                     ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: (() {
-                                          Navigator.pop(context);
-                                        }),
-                                        child: TextWidget(
-                                            text: 'Close',
-                                            fontSize: 14,
-                                            color: Colors.black)),
-                                    TextButton(
-                                        onPressed: (() {
-                                          showToast(
-                                              'This feature is under development!');
-                                          Navigator.pop(context);
-                                        }),
-                                        child: TextWidget(
-                                            text: 'Print QR',
-                                            fontSize: 14,
-                                            color: Colors.black)),
-                                  ],
-                                );
-                              }));
-                        },
+                                    actions: [
+                                      TextButton(
+                                          onPressed: (() {
+                                            Navigator.pop(context);
+                                          }),
+                                          child: TextWidget(
+                                              text: 'Close',
+                                              fontSize: 14,
+                                              color: Colors.black)),
+                                      TextButton(
+                                          onPressed: (() {
+                                            downloadImage();
+                                            downloadImage();
+                                            Navigator.pop(context);
+                                          }),
+                                          child: TextWidget(
+                                              text: 'Print QR',
+                                              fontSize: 14,
+                                              color: Colors.black)),
+                                    ],
+                                  );
+                                }));
+                          },
+                        ),
                       ),
                     ],
                   ),
