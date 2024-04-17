@@ -15,6 +15,7 @@ Future addItem(name, categ, desc, code, unit, expirationDate, img) async {
     'id': docUser.id,
     'dateTime': DateTime.now(),
     'qty': 0,
+    'uid': FirebaseAuth.instance.currentUser!.uid,
   };
 
   await docUser.set(json);
