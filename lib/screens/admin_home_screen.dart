@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pharma_invenqurec/screens/add_item_screen.dart';
 import 'package:pharma_invenqurec/screens/item_screen.dart';
@@ -25,237 +26,259 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   String selectedCateg = '';
   @override
   Widget build(BuildContext context) {
+    final Stream<DocumentSnapshot> userData = FirebaseFirestore.instance
+        .collection('Admins')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .snapshots();
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 20,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const UsersScreen()));
-                  },
-                  icon: Icon(
-                    Icons.account_circle,
-                    color: primary,
+      body: StreamBuilder<DocumentSnapshot>(
+          stream: userData,
+          builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+            if (!snapshot.hasData) {
+              return const SizedBox();
+            } else if (snapshot.hasError) {
+              return const Center(child: Text('Something went wrong'));
+            } else if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox();
+            }
+            dynamic data = snapshot.data;
+            return SafeArea(
+              child: Column(
+                children: [
+                  const SizedBox(
+                    height: 20,
                   ),
-                ),
-                TextWidget(
-                  text: 'Inventory',
-                  fontSize: 18,
-                  color: Colors.black,
-                  fontFamily: 'Bold',
-                ),
-                IconButton(
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const AddItemScreen()));
-                  },
-                  icon: Icon(
-                    Icons.add,
-                    color: primary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: 40,
-                  width: 300,
-                  decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.black,
-                      ),
-                      borderRadius: BorderRadius.circular(100)),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 10, right: 10),
-                    child: TextFormField(
-                      style: const TextStyle(
-                          color: Colors.black,
-                          fontFamily: 'Regular',
-                          fontSize: 14),
-                      onChanged: (value) {
-                        setState(() {
-                          nameSearched = value;
-                        });
-                      },
-                      decoration: const InputDecoration(
-                          labelStyle: TextStyle(
-                            color: Colors.black,
-                          ),
-                          hintText: 'Search',
-                          hintStyle: TextStyle(fontFamily: 'QRegular'),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: Colors.grey,
-                          )),
-                      controller: searchController,
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  width: 20,
-                ),
-                Container(
-                  decoration:
-                      BoxDecoration(color: primary, shape: BoxShape.circle),
-                  child: IconButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: TextWidget(
-                              text: 'Adding category',
-                              fontSize: 18,
-                              fontFamily: 'Bold',
-                            ),
-                            content: SizedBox(
-                              height: 75,
-                              child: TextFieldWidget(
-                                controller: categ,
-                                label: 'Category Name',
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: TextWidget(
-                                  text: 'Close',
-                                  fontSize: 14,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  addCateg(categ.text);
-                                  Navigator.pop(context);
-                                },
-                                child: TextWidget(
-                                  text: 'Add',
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          );
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => const UsersScreen()));
                         },
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.category_outlined,
-                      color: Colors.white,
-                    ),
+                        icon: Icon(
+                          Icons.account_circle,
+                          color: primary,
+                        ),
+                      ),
+                      TextWidget(
+                        text: 'Inventory',
+                        fontSize: 18,
+                        color: Colors.black,
+                        fontFamily: 'Bold',
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => AddItemScreen(
+                                    inAdmin: true,
+                                  )));
+                        },
+                        icon: Icon(
+                          Icons.add,
+                          color: primary,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            selectedCateg != ''
-                ? tableWidget()
-                : Expanded(
-                    child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('Categs')
-                            .snapshots(),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<QuerySnapshot> snapshot) {
-                          if (snapshot.hasError) {
-                            print(snapshot.error);
-                            return const Center(child: Text('Error'));
-                          }
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Padding(
-                              padding: EdgeInsets.only(top: 50),
-                              child: Center(
-                                  child: CircularProgressIndicator(
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 40,
+                        width: 300,
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Colors.black,
+                            ),
+                            borderRadius: BorderRadius.circular(100)),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10, right: 10),
+                          child: TextFormField(
+                            style: const TextStyle(
                                 color: Colors.black,
-                              )),
-                            );
-                          }
-
-                          final data = snapshot.requireData;
-                          return GridView.builder(
-                            itemCount: data.docs.length,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 3),
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: GestureDetector(
-                                  onDoubleTap: () {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      builder: (context) {
-                                        return ListTile(
-                                          onTap: () async {
-                                            await FirebaseFirestore.instance
-                                                .collection('Categs')
-                                                .doc(data.docs[index].id)
-                                                .delete();
-                                            Navigator.pop(context);
-                                          },
-                                          leading: const Icon(
-                                            Icons.delete_outline,
-                                            color: Colors.red,
-                                          ),
-                                          title: TextWidget(
-                                              text: 'Delete category',
-                                              fontSize: 14),
-                                        );
-                                      },
-                                    );
-                                  },
-                                  onTap: () {
-                                    setState(() {
-                                      selectedCateg = data.docs[index]['name'];
-                                    });
-                                  },
-                                  child: Card(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(
-                                          Icons.folder_copy_outlined,
-                                          size: 50,
-                                        ),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        TextWidget(
-                                          text: data.docs[index]['name'],
-                                          fontSize: 13,
-                                          fontFamily: 'Bold',
-                                        ),
-                                      ],
+                                fontFamily: 'Regular',
+                                fontSize: 14),
+                            onChanged: (value) {
+                              setState(() {
+                                nameSearched = value;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                                labelStyle: TextStyle(
+                                  color: Colors.black,
+                                ),
+                                hintText: 'Search',
+                                hintStyle: TextStyle(fontFamily: 'QRegular'),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: Colors.grey,
+                                )),
+                            controller: searchController,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                            color: primary, shape: BoxShape.circle),
+                        child: IconButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: TextWidget(
+                                    text: 'Adding category',
+                                    fontSize: 18,
+                                    fontFamily: 'Bold',
+                                  ),
+                                  content: SizedBox(
+                                    height: 75,
+                                    child: TextFieldWidget(
+                                      controller: categ,
+                                      label: 'Category Name',
                                     ),
                                   ),
-                                ),
-                              );
-                            },
-                          );
-                        }),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: TextWidget(
+                                        text: 'Close',
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        addCateg(categ.text, data['pharmacy']);
+                                        Navigator.pop(context);
+                                      },
+                                      child: TextWidget(
+                                        text: 'Add',
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.category_outlined,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-            const SizedBox(
-              height: 20,
-            ),
-          ],
-        ),
-      ),
+                  selectedCateg != ''
+                      ? tableWidget()
+                      : Expanded(
+                          child: StreamBuilder<QuerySnapshot>(
+                              stream: FirebaseFirestore.instance
+                                  .collection('Categs')
+                                  .where('pharmacy',
+                                      isEqualTo: data['pharmacy'])
+                                  .snapshots(),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                                if (snapshot.hasError) {
+                                  print(snapshot.error);
+                                  return const Center(child: Text('Error'));
+                                }
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Padding(
+                                    padding: EdgeInsets.only(top: 50),
+                                    child: Center(
+                                        child: CircularProgressIndicator(
+                                      color: Colors.black,
+                                    )),
+                                  );
+                                }
+
+                                final data = snapshot.requireData;
+                                return GridView.builder(
+                                  itemCount: data.docs.length,
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 3),
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: GestureDetector(
+                                        onDoubleTap: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            builder: (context) {
+                                              return ListTile(
+                                                onTap: () async {
+                                                  await FirebaseFirestore
+                                                      .instance
+                                                      .collection('Categs')
+                                                      .doc(data.docs[index].id)
+                                                      .delete();
+                                                  Navigator.pop(context);
+                                                },
+                                                leading: const Icon(
+                                                  Icons.delete_outline,
+                                                  color: Colors.red,
+                                                ),
+                                                title: TextWidget(
+                                                    text: 'Delete category',
+                                                    fontSize: 14),
+                                              );
+                                            },
+                                          );
+                                        },
+                                        onTap: () {
+                                          setState(() {
+                                            selectedCateg =
+                                                data.docs[index]['name'];
+                                          });
+                                        },
+                                        child: Card(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(
+                                                Icons.folder_copy_outlined,
+                                                size: 50,
+                                              ),
+                                              const SizedBox(
+                                                height: 10,
+                                              ),
+                                              TextWidget(
+                                                text: data.docs[index]['name'],
+                                                fontSize: 13,
+                                                fontFamily: 'Bold',
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              }),
+                        ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                ],
+              ),
+            );
+          }),
     );
   }
 

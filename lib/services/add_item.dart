@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-Future addItem(name, categ, desc, code, unit, expirationDate, img) async {
+Future addItem(
+    name, categ, desc, code, unit, expirationDate, img, pharmacy) async {
   final docUser = FirebaseFirestore.instance.collection('Items').doc();
 
   final json = {
@@ -10,6 +11,7 @@ Future addItem(name, categ, desc, code, unit, expirationDate, img) async {
     'desc': desc,
     'code': code,
     'unit': unit,
+    'pharmacy': pharmacy,
     'expirationDate': expirationDate,
     'img': img,
     'id': docUser.id,
